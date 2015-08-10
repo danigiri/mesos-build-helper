@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2014 Daniel Giribet <dani - calidos.cat>
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.calidos.dani</groupId>
+	<artifactId>mesos-build-helper</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>rpm</packaging>
+
+	<name>Apache Mesos build helper</name>
+	<description>Downloads Apache Mesos, compiles it and builds an rpm
+	</description>
+    <inceptionYear>2015</inceptionYear>
+    <url>http://dani.calidos.com</url>
+        
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<mesos.version_>0.22.1</mesos.version_>
+		<mesos.url_>https://github.com/apache/mesos/archive/${mesos.version_}.tar.gz</mesos.url_>
+		<mesos.sourcefolder_>${project.build.directory}/mesos-${mesos.version_}</mesos.sourcefolder_>
+		<mesos.installfolder_>${install.prefix_}/zookeeper</mesos.installfolder_>
+		<mesos.buildfolder_>${mesos.sourcefolder_}/build</mesos.buildfolder_>
+    	<install.prefix_>/usr</install.prefix_>
+		<mesos.datafolder_>/var/lib/mesos</mesos.datafolder_>
+		<mesos.logfolder_>/var/log/mesos</mesos.logfolder_>
+		<mesos.username_>root</mesos.username_>
+		<mesos.groupname_>root</mesos.groupname_>
+		<mesos.folderpermissions.default_>755</mesos.folderpermissions.default_>
+		<mesos.filepermissions.default_>644</mesos.filepermissions.default_>
+		<mesos.execpermissions.writable_>775</mesos.execpermissions.writable_>
+		<mesos.filepermissions.writable_>664</mesos.filepermissions.writable_>
+    </properties>
+    
+    <build>
+    
+    	<resources>
+    	
+			<resource>
+	    		<directory>${basedir}/src/main/bash</directory>
+	    		<targetPath>${project.build.outputDirectory}</targetPath>
+	    		<filtering>true</filtering>
+	    		<excludes>
+	    			<exclude>${project.artifactId}-compile.*</exclude>
+	    			<exclude>*install.sh</exclude>
+	    		</excludes>
+	    	</resource>
+    	</resources>
+    
+   		<plugins>
+
+            <plugin>	<!-- Download and expand whatever is needed -->
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="${mesos.url_}" 
+                                	 dest="${project.build.directory}/mesos-${mesos.version_}.tar.gz" skipexisting="true" />
+                                <untar src="${project.build.directory}/mesos-${mesos.version_}.tar.gz" 
+                                	   dest="${project.build.directory}" compression="gzip"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+		    </plugin>
+		    
+		    <plugin>	<!-- run compile script -->
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.2.1</version>
+					<executions>
+						<execution>
+							<id>compile-and-make</id>
+							<phase>compile</phase>
+							<goals>
+								<goal>exec</goal>
+							</goals>
+							<configuration>
+								<executable>bash</executable>
+								<workingDirectory>${mesos.buildfolder_}</workingDirectory>
+								<arguments>
+									<argument>-c</argument>
+									<argument>
+											if [ -e ${compile.script_} ]; then 
+												chmod -v +x ${compile.script_}; ${compile.script_}; 
+											fi
+									</argument>
+								</arguments>
+							</configuration>
+						</execution>
+						<execution>
+							<id>test</id>
+							<phase>compile</phase>
+							<goals>
+								<goal>exec</goal>
+							</goals>
+							<configuration>
+								<executable>bash</executable>
+								<workingDirectory>${project.build.directory}</workingDirectory>
+								<arguments>
+									<argument>-c</argument>
+									<argument>
+										if [ -e ${test.script_} ]; then 
+											chmod -v +x ${test.script_}; ${test.script_}; 
+										fi
+									</argument>
+								</arguments>
+							</configuration>
+						</execution>
+					</executions>
+			</plugin>
+		    
+			<plugin>	<!-- package as rpm, yay -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>rpm-maven-plugin</artifactId>
+                <version>2.1-alpha-2</version>
+                <extensions>true</extensions>
+
+                <configuration>
+                    <packager>Daniel Giribet</packager>
+                    <distribution>Calidos</distribution>
+                    <group>Calidos/Apache Mesos</group>
+                    <copyright>See installed LICENSE file</copyright>
+                    <summary>${project.name}</summary>
+                    <description>${project.description}</description>
+                    <url>${project.url}</url>
+                    <prefix>${install.prefix_}</prefix>
+                    <needarch>${binary.architecture_}</needarch>
+
+	    			<icon />
+
+                    <defineStatements>
+                        <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+                        <defineStatement>_name ${project.artifactId}</defineStatement>
+                        <defineStatement>_app ${project.artifactId}</defineStatement>
+                    </defineStatements>
+
+                    <defaultDirmode>${mesos.folderpermissions.default_}</defaultDirmode>
+                    <defaultFilemode>${mesos.filepermissions.default_}</defaultFilemode>
+                    <defaultUsername>root</defaultUsername>
+                    <defaultGroupname>root</defaultGroupname>
+                               
+                    <requires>
+                    	<require>cyrus-sasl-md5</require>
+						<require>libcurl</require>
+						<require>subversion</require>
+                    </requires>
+                    	
+                    <mappings>
+                                
+                    </mappings>
+                    
+					<preinstallScriptlet>
+						<scriptFile>${project.build.directory}/preinstall.sh</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</preinstallScriptlet>                    
+					<postremoveScriptlet>
+						<scriptFile>${project.build.directory}/postremove.sh</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</postremoveScriptlet>
+			    </configuration>
+		   </plugin>
+		    
+		    
+		</plugins>
+	</build>
+		    
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<comments>Copyright (C) 2015 Daniel Giribet (packaging)</comments>
+		</license>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<comments>ZooKeeper credits (http://zookeeper.apache.org/credits.html)</comments>
+		</license>
+	</licenses>	
+		    
+		    
+</project>
+
+
+
+
+
+		    
