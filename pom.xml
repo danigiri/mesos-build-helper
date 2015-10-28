@@ -29,12 +29,19 @@
         
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mesos.version_>0.22.1</mesos.version_>
+		<mesos.version_>0.24.0</mesos.version_>
 		<mesos.url_>https://github.com/apache/mesos/archive/${mesos.version_}.tar.gz</mesos.url_>
+       	<binary.architecture_>x86_64</binary.architecture_>	<!-- default -->
+
+    	<compile.script_>${project.build.directory}/${project.artifactId}-compile.sh</compile.script_>
+    	<test.script_>${project.build.directory}/${project.artifactId}-test.sh</test.script_>
+
 		<mesos.sourcefolder_>${project.build.directory}/mesos-${mesos.version_}</mesos.sourcefolder_>
-		<mesos.installfolder_>${install.prefix_}/zookeeper</mesos.installfolder_>
+		<mesos.installfolder_>${install.prefix_}/mesos</mesos.installfolder_>
 		<mesos.buildfolder_>${mesos.sourcefolder_}/build</mesos.buildfolder_>
-    	<install.prefix_>/usr</install.prefix_>
+		<mesos.destdir_>${project.build.directory}/install</mesos.destdir_>	
+
+    	<install.prefix_>/usr/local</install.prefix_>
 		<mesos.datafolder_>/var/lib/mesos</mesos.datafolder_>
 		<mesos.logfolder_>/var/log/mesos</mesos.logfolder_>
 		<mesos.username_>root</mesos.username_>
@@ -49,14 +56,10 @@
     
     	<resources>
     	
-			<resource>
+			<resource>	<!-- compile script as well as any pre-postinstall.sh -->
 	    		<directory>${basedir}/src/main/bash</directory>
-	    		<targetPath>${project.build.outputDirectory}</targetPath>
+	    		<targetPath>${project.build.directory}</targetPath>
 	    		<filtering>true</filtering>
-	    		<excludes>
-	    			<exclude>${project.artifactId}-compile.*</exclude>
-	    			<exclude>*install.sh</exclude>
-	    		</excludes>
 	    	</resource>
     	</resources>
     
@@ -96,7 +99,7 @@
 							</goals>
 							<configuration>
 								<executable>bash</executable>
-								<workingDirectory>${mesos.buildfolder_}</workingDirectory>
+								<workingDirectory>${mesos.sourcefolder_}</workingDirectory>
 								<arguments>
 									<argument>-c</argument>
 									<argument>
@@ -132,18 +135,21 @@
 			<plugin>	<!-- package as rpm, yay -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>rpm-maven-plugin</artifactId>
-                <version>2.1-alpha-2</version>
+                <version>2.1.4</version>
                 <extensions>true</extensions>
 
                 <configuration>
+                	<name>mesos</name>
+                	<projversion>${mesos.version_}</projversion>
+                	<!-- release></release-->
                     <packager>Daniel Giribet</packager>
-                    <distribution>Calidos</distribution>
-                    <group>Calidos/Apache Mesos</group>
-                    <copyright>See installed LICENSE file</copyright>
+                    <distribution>Calidos convenience packages</distribution>
+                    <group>Applications/System</group>
+                    <license>The Apache Software License, Version 2.0</license>
                     <summary>${project.name}</summary>
                     <description>${project.description}</description>
                     <url>${project.url}</url>
-                    <prefix>${install.prefix_}</prefix>
+                    <prefix>${install.prefix_}</prefix>	<!-- relocatable if mesos allows it -->
                     <needarch>${binary.architecture_}</needarch>
 
 	    			<icon />
@@ -154,29 +160,137 @@
                         <defineStatement>_app ${project.artifactId}</defineStatement>
                     </defineStatements>
 
+                    <defaultUsername>${mesos.username_}</defaultUsername>
+                    <defaultGroupname>${mesos.groupname_}</defaultGroupname>
                     <defaultDirmode>${mesos.folderpermissions.default_}</defaultDirmode>
                     <defaultFilemode>${mesos.filepermissions.default_}</defaultFilemode>
-                    <defaultUsername>root</defaultUsername>
-                    <defaultGroupname>root</defaultGroupname>
                                
-                    <requires>
+                    <!--requires>
                     	<require>cyrus-sasl-md5</require>
-						<require>libcurl</require>
-						<require>subversion</require>
-                    </requires>
+                    </requires-->
                     	
                     <mappings>
-                                
+                    
+                    	<!-- Watch the order of the mappings, it's important so stuff that we want
+                    		 created first goes first. This is relevant as mappings that are folders
+                    		 automatically get created properly in a recursive way. Naturally we
+                    		 want to have the biggest folder structures to be created that way and
+                    		 other smaller stuff we can create more manually.
+                    	 -->
+						<mapping>	<!-- binaries -->	
+							<directory>${install.prefix_}/bin</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/bin/</location>
+								</source>
+							</sources>
+							<filemode>755</filemode>
+							<directoryIncluded>false</directoryIncluded>	<!-- probably this is already there -->
+						</mapping>
+						
+						<mapping>	<!-- etc template stuff -->	
+							<directory>/etc/mesos</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/etc</location>
+								</source>
+							</sources>
+						</mapping>
+						
+						<mapping>	<!-- headers  (/include is assumed there )-->	
+							<directory>${install.prefix_}/include/mesos</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/include/mesos</location>
+								</source>
+							</sources>
+						</mapping>
+												
+						<mapping>	<!-- python libs, (/lib we assume exists) -->	
+							<directory>${install.prefix_}/lib/python2.7</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/lib/python2.7</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>	<!-- pkgconfig folder (/lib assumed exists)-->	
+							<directory>${install.prefix_}/lib/pkgconfig</directory>
+						</mapping>
+						<mapping>	<!-- pkgconfig file -->	
+							<directory>${install.prefix_}/lib/pkgconfig</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/lib/pkgconfig/mesos.pc</location>
+								</source>
+							</sources>
+							<directoryIncluded>false</directoryIncluded>
+						</mapping>
+						
+						<mapping>	<!-- .la .so libraries and softlinks -->	
+							<directory>${install.prefix_}/lib</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/lib</location>
+									<includes>
+										<include>*.la</include>
+										<include>libfixed_resource_estimator-${mesos.version_}.so</include>
+										<include>libmesos-${mesos.version_}.so</include>
+									</includes>
+								</source>
+                    			<softlinkSource>
+                    				<destination>libfixed_resource_estimator.so</destination>
+                    				<location>libfixed_resource_estimator-${mesos.version_}.so</location>
+                    			</softlinkSource>								
+                    			<softlinkSource>
+                    				<destination>libmesos.so</destination>
+                    				<location>libmesos-${mesos.version_}.so</location>
+                    			</softlinkSource>								
+							</sources>
+							<filemode>755</filemode>
+							<directoryIncluded>false</directoryIncluded>	<!-- probably this is already there -->
+						</mapping>
+					
+						<mapping>	<!-- libexec/mesos (libexec we assume exists)-->	
+							<directory>${install.prefix_}/libexec/mesos</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/libexec/mesos</location>
+								</source>
+							</sources>
+							<filemode>755</filemode>
+						</mapping>
+
+						<mapping>	<!-- sbin -->	
+							<directory>${install.prefix_}/sbin</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/sbin</location>
+								</source>
+							</sources>
+							<filemode>755</filemode>
+							<directoryIncluded>false</directoryIncluded>	<!-- probably this is already there -->
+						</mapping>
+						
+						<mapping>	<!-- share/mesos (leaves intermediate folders out)-->	
+							<directory>${install.prefix_}/share/mesos</directory>
+							<sources>
+								<source>
+									<location>${mesos.destdir_}/${install.prefix_}/share/mesos</location>
+								</source>
+							</sources>
+						</mapping>
+						
                     </mappings>
                     
-					<preinstallScriptlet>
-						<scriptFile>${project.build.directory}/preinstall.sh</scriptFile>
+					<postinstallScriptlet>
+						<scriptFile>${project.build.directory}/postinstall.sh</scriptFile>
 						<fileEncoding>utf-8</fileEncoding>
-					</preinstallScriptlet>                    
-					<postremoveScriptlet>
+					</postinstallScriptlet>                    
+					<!--postremoveScriptlet>
 						<scriptFile>${project.build.directory}/postremove.sh</scriptFile>
 						<fileEncoding>utf-8</fileEncoding>
-					</postremoveScriptlet>
+					</postremoveScriptlet-->
 			    </configuration>
 		   </plugin>
 		    
@@ -193,11 +307,64 @@
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
-			<comments>ZooKeeper credits (http://zookeeper.apache.org/credits.html)</comments>
+			<comments>Apache Mesos</comments>
 		</license>
-	</licenses>	
-		    
-		    
+	</licenses>
+	<!-- 
+	
+-rw_r_____    1 root    root                       38 Oct 12 22:08 /etc/default/*
+-rw-r__r__    1 root    root                        2 Oct 12 22:08 /etc/mesos-master/*
+drwxr-xr-x    2 root    root                        0 Oct 12 22:08 /etc/mesos-slave
+-rw-r__r__    1 root    root                       26 Oct 12 22:08 /etc/mesos/zk
+-rwxr-xr-x    1 root    root                    38447 Oct 12 22:08 /usr/bin/*
+-rw-r__r__    1 root    root                      339 Oct 12 22:08 /usr/etc/mesos/*
+-rw-r__r__    1 root    root                     2928 Oct 12 22:08 /usr/include/mesos/*.h*
+-rw-r__r__    1 root    root                     2026 Oct 12 22:08 /usr/include/mesos/authentication/*
+-rw-r__r__    1 root    root                     5917 Oct 12 22:08 /usr/include/mesos/authorizer/*
+-rw-r__r__    1 root    root                     1007 Oct 12 22:08 /usr/include/mesos/containerizer/*
+-rw-r__r__    1 root    root                     1078 Oct 12 22:08 /usr/include/mesos/executor/*
+-rw-r__r__    1 root    root                      977 Oct 12 22:08 /usr/include/mesos/fetcher/*
+-rw-r__r__    1 root    root                     1335 Oct 12 22:08 /usr/include/mesos/maintenance/*
+-rw-r__r__    1 root    root                     7102 Oct 12 22:08 /usr/include/mesos/master/*
+-rw-r__r__    1 root    root                     1923 Oct 12 22:08 /usr/include/mesos/module/*
+-rw-r__r__    1 root    root                     1366 Oct 12 22:08 /usr/include/mesos/scheduler/*
+-rw-r__r__    1 root    root                     3209 Oct 12 22:08 /usr/include/mesos/slave/*
+-rw-r__r__    1 root    root                     3009 Oct 12 22:08 /usr/include/mesos/v1/*
+-rw-r__r__    1 root    root                     1081 Oct 12 22:08 /usr/include/mesos/v1/executor/*
+-rw-r__r__    1 root    root                     1417 Oct 12 22:08 /usr/include/mesos/v1/scheduler/*
+-rw-r__r__    1 root    root                     9254 Oct 12 22:08 /usr/include/process/*
+-rw-r__r__    1 root    root                     1791 Oct 12 22:08 /usr/include/stout/*
+-rwxr-xr-x    1 root    root                   174645 Oct 12 22:08 /usr/lib/libfixed_resource_estimator-0.25.0.so
+-rwxr-xr-x    1 root    root                     1236 Oct 12 22:08 /usr/lib/libfixed_resource_estimator.la
+lrwxrwxrwx    1 root    root                       37 Oct 12 22:08 /usr/lib/libfixed_resource_estimator.so -> libfixed_resource_estimator-0.25.0.so
+-rwxr-xr-x    1 root    root                 31135533 Oct 12 22:08 /usr/lib/libmesos-0.25.0.so
+-rwxr-xr-x    1 root    root                     1179 Oct 12 22:08 /usr/lib/libmesos.la
+lrwxrwxrwx    1 root    root                       18 Oct 12 22:08 /usr/lib/libmesos.so -> libmesos-0.25.0.so
+-rw-r__r__    1 root    root                      324 Oct 12 22:08 /usr/lib/pkgconfig/mesos.pc
+-rw-r__r__    1 root    root                      304 Oct 12 22:08 /usr/lib/python2.7/site-packages/*
+-rw-r__r__    1 root    root                       10 Oct 12 22:08 /usr/lib/python2.7/site-packages/mesos.cli-0.25.0.dist-info/*
+-rw-r__r__    1 root    root                     1898 Oct 12 22:08 /usr/lib/python2.7/site-packages/mesos/*
+-rw_r_____    1 root    root                      215 Oct 12 22:08 /usr/lib/systemd/system/*
+-rwxr-xr-x    1 root    root                   100145 Oct 12 22:08 /usr/libexec/mesos/*
+lrwxrwxrwx    1 root    root                       47 Oct 12 22:08 /usr/local/lib/libfixed_resource_estimator-0.25.0.so -> ../../lib/libfixed_resource_estimator-0.25.0.so
+lrwxrwxrwx    1 root    root                       40 Oct 12 22:08 /usr/local/lib/libfixed_resource_estimator.so -> ../../lib/libfixed_resource_estimator.so
+lrwxrwxrwx    1 root    root                       28 Oct 12 22:08 /usr/local/lib/libmesos-0.25.0.so -> ../../lib/libmesos-0.25.0.so
+lrwxrwxrwx    1 root    root                       21 Oct 12 22:08 /usr/local/lib/libmesos.so -> ../../lib/libmesos.so
+-rwxr-xr-x    1 root    root                      400 Oct 12 22:08 /usr/sbin/*
+-rw-r__r__    1 root    root                   127090 Oct 12 22:08 /usr/share/doc/mesos/CHANGELOG
+-rw-r__r__    1 root    root                  4399783 Oct 12 22:08 /usr/share/java/*
+-rw-r__r__    1 root    root                     2643 Oct 12 22:08 /usr/share/mesos/webui/master/static/*
+-rw-r__r__    1 root    root                    99548 Oct 12 22:08 /usr/share/mesos/webui/master/static/css/*
+-rw-r__r__    1 root    root                      172 Oct 12 22:08 /usr/share/mesos/webui/master/static/directives/*
+-rw-r__r__    1 root    root                    20290 Oct 12 22:08 /usr/share/mesos/webui/master/static/fonts/*
+-rw-r__r__    1 root    root                     1664 Oct 12 22:08 /usr/share/mesos/webui/master/static/ico/*
+-rw-r__r__    1 root    root                     4710 Oct 12 22:08 /usr/share/mesos/webui/master/static/img/*
+-rw-r__r__    1 root    root                   716215 Oct 12 22:08 /usr/share/mesos/webui/master/static/js/*
+-rw-r__r__    1 root    root                     1635 Oct 12 22:08 /usr/share/mesos/webui/master/static/obj/*
+drwxr-xr-x    2 root    root                        0 Oct 12 22:08 /var/lib/mesos
+drwxr-xr-x    2 root    root                        0 Oct 12 22:08 /var/log/mesos
+	
+	 -->
 </project>
 
 

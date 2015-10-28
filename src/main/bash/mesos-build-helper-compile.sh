@@ -15,28 +15,49 @@
 #  limitations under the License.
 
 # ______________________________________________________________________________
-# Output message on STDERR <message>
-echoerr_() { printf %s\\n "\t$@" 1>&2; }
 
+[ -z "$JAVA_HOME" ] && export JAVA_HOME='/usr/lib/jvm/java'
 
-echoerr_ 'Building Apache Mesos v${mesos.version_}, standby...'
-mkdir -vp ${mesos.tempfolder_}
 exit 0
+# Output message on STDERR <message>
+echoerr_() { printf %s\\n "$@" 1>&2; }
 
-echoerr_ 'Bootstrapping... (check ${mesos.tempfolder_}/bootstrap.output for logs)'
+echoerr_ 'Building Apache Mesos v${mesos.version_} at ${mesos.sourcefolder_}, standby...'
+
+# Avoid annoying perl warnings when bootstrap the system
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+echoerr_ 'Bootstrapping... (check ${mesos.sourcefolder_}/bootstrap.output for logs)'
+chmod -v a+x bootstrap
 ./bootstrap > ./bootstrap.output
 ERR_=$?
 if [ $ERR_ -ne 0 ]; then
-	echo "Error running bootstrap, check '${mesos.tempfolder_}/bootstrap.output'"
+	echo "Error running bootstrap, check '${mesos.buildfolder_}/bootstrap.output'"
 	exit $ERR_
 fi
 echoerr_ 'bootstrap complete'
 
-echoerr_ 'Building... (check ${mesos.tempfolder_}/make.output for logs)'
-./make > ./make.output
+mkdir -vp ${mesos.buildfolder_}
+cd ${mesos.buildfolder_}
+echoerr_ 'Configuring... (check ${mesos.buildfolder_}/configure.output for logs)'
+../configure > ./configure.output
+
+echoerr_ 'Building... (check ${mesos.buildfolder_}/make.output for logs)'
+make > ./make.output
 ERR_=$?
 if [ $ERR_ -ne 0 ]; then
-	echo "Error running make, check '${mesos.tempfolder_}/make.output'"
+	echo "Error running make, check '$.mesos.buildfolder_}/make.output'"
 	exit $ERR_
 fi
+
+echoerr_ 'Installing temporarily... (check ${mesos.buildfolder_}/install.output for logs)'
+export DESTDIR=${mesos.destdir_}
+make install > ./install.output
+ERR_=$?
+if [ $ERR_ -ne 0 ]; then
+	echo "Error running make install, check '$.mesos.buildfolder_}/install.output'"
+	exit $ERR_
+fi
+
 

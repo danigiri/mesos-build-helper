@@ -1,0 +1,48 @@
+#!/usr/bin/bash -x
+
+[ -z "$JAVA_PACKAGES" ] && JAVA_PACKAGES='java-1.8.0-openjdk-headless java-1.8.0-openjdk-devel'
+
+[ -z "$MAVEN_URL" ] && MAVEN_URL='http://apache.rediris.es/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz'
+[ -z "$PREFIX" ] && PREFIX='./.deps'
+
+[ -z "$MAVEN_FILE" ] && MAVEN_FILE='apache-maven.tar.gz'
+[ -z "$MAVEN_INSTALL_FOLDER_" ] && MAVEN_INSTALL_FOLDER_="$PREFIX/apache-maven"
+[ -z "$M2_HOME" ] && M2_HOME="$MAVEN_INSTALL_FOLDER_"
+
+
+if [ -f /etc/redhat-release ]; then
+	sudo yum install "$JAVA_PACKAGES" tree wget rpm-build -y -q
+	# mesos-specific deps
+	sudo yum groupinstall -y -q "Development Tools"
+	sudo yum install -y -q python-devel zlib-devel libcurl-devel openssl-devel \
+						   cyrus-sasl-devel cyrus-sasl-md5 apr-devel \
+						   subversion-devel apr-util-devel
+fi
+
+# install maven if not installed
+ mvn --version >/dev/null 2>&1
+ if [ $? -ne 0 ]; then
+ 
+ 	if [ ! -e "$MAVEN_INSTALL_FOLDER_/bin/mvn" ]; then
+	
+		echo "Dowloading Maven at URL '$MAVEN_URL' ..."
+		wget -q "$MAVEN_URL" -O "$MAVEN_FILE"
+		if [ $? -ne 0 ]; then
+			echo "Could not get Maven at URL '$MAVEN_URL' ($?)"
+			exit 1
+		fi
+	
+		echo "Extracting Maven into '$MAVEN_INSTALL_FOLDER_'"
+		mkdir -p "$MAVEN_INSTALL_FOLDER_"
+		tar xzf "$MAVEN_FILE" --strip=1 -C "$MAVEN_INSTALL_FOLDER_"
+		rm -f "$MAVEN_FILE"
+		echo 'Done'
+		
+	fi
+ 
+ 
+ else
+ 	echo 'Maven already installed'
+ fi
+ 
+exit 0

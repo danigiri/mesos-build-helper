@@ -1,3 +1,5 @@
+.project
+.deps/
 target/
 pom.xml.tag
 pom.xml.releaseBackup

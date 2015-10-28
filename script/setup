@@ -1,0 +1,1 @@
+M2_HOME=/home/dani/GIT/danigiri/mesos-build-helper/.deps/apache-maven MAVEN_HOME=$M2_HOME PATH=$MAVEN_HOME/bin:$PATH MVN=$MAVEN_HOME/bin/mvn .deps/apache-maven/bin/mvn package
