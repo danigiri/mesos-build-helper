@@ -18,7 +18,6 @@
 
 [ -z "$JAVA_HOME" ] && export JAVA_HOME='/usr/lib/jvm/java'
 
-exit 0
 # Output message on STDERR <message>
 echoerr_() { printf %s\\n "$@" 1>&2; }
 
@@ -36,7 +35,7 @@ if [ $ERR_ -ne 0 ]; then
 	echo "Error running bootstrap, check '${mesos.buildfolder_}/bootstrap.output'"
 	exit $ERR_
 fi
-echoerr_ 'bootstrap complete'
+echoerr_ 'Bootstrap complete'
 
 mkdir -vp ${mesos.buildfolder_}
 cd ${mesos.buildfolder_}
@@ -50,6 +49,7 @@ if [ $ERR_ -ne 0 ]; then
 	echo "Error running make, check '$.mesos.buildfolder_}/make.output'"
 	exit $ERR_
 fi
+echoerr_ 'Configure complete'
 
 echoerr_ 'Installing temporarily... (check ${mesos.buildfolder_}/install.output for logs)'
 export DESTDIR=${mesos.destdir_}
@@ -59,5 +59,4 @@ if [ $ERR_ -ne 0 ]; then
 	echo "Error running make install, check '$.mesos.buildfolder_}/install.output'"
 	exit $ERR_
 fi
-
-
+echoerr_ 'Make install complete'
