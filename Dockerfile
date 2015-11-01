@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #  Copyright 2015 Daniel Giribet <dani - calidos.cat>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-echo '*** Building and packaging Mesos, this will take a long time ****'
-export JAVA_HOME='/usr/lib/jvm/java'
-M2_HOME=`pwd`/.deps/apache-maven \
-MAVEN_HOME=$M2_HOME \
-PATH=$MAVEN_HOME/bin:$PATH \
-MVN=$MAVEN_HOME/bin/mvn \
-	.deps/apache-maven/bin/mvn -q package
-echo '*** Finished building and packaging Mesos ****'
+
+FROM centos
+MAINTAINER Daniel Giribet
+RUN mkdir build
+ADD pom.xml LICENSE build/
+ADD script build/script
+ADD src build/src
+WORKDIR build
+RUN source ./script/bootstrap
+RUN source ./script/setup

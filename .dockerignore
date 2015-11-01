@@ -1,0 +1,6 @@
+target
+.deps
+.git
+.gitignore
+*.rpm
+

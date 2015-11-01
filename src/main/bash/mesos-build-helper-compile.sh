@@ -23,13 +23,13 @@ echoerr_() { printf %s\\n "$@" 1>&2; }
 
 echoerr_ 'Building Apache Mesos v${mesos.version_} at ${mesos.sourcefolder_}, standby...'
 
-# Avoid annoying perl warnings when bootstrap the system
+# Avoid annoying perl warnings when bootstrapping mesos
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 
 echoerr_ 'Bootstrapping... (check ${mesos.sourcefolder_}/bootstrap.output for logs)'
 chmod -v a+x bootstrap
-./bootstrap > ./bootstrap.output
+./bootstrap > ./bootstrap.output 2>&1
 ERR_=$?
 if [ $ERR_ -ne 0 ]; then
 	echo "Error running bootstrap, check '${mesos.buildfolder_}/bootstrap.output'"
@@ -40,7 +40,7 @@ echoerr_ 'Bootstrap complete'
 mkdir -vp ${mesos.buildfolder_}
 cd ${mesos.buildfolder_}
 echoerr_ 'Configuring... (check ${mesos.buildfolder_}/configure.output for logs)'
-../configure > ./configure.output
+../configure > ./configure.output 2>&1
 
 echoerr_ 'Building... (check ${mesos.buildfolder_}/make.output for logs)'
 make > ./make.output
@@ -53,7 +53,7 @@ echoerr_ 'Configure complete'
 
 echoerr_ 'Installing temporarily... (check ${mesos.buildfolder_}/install.output for logs)'
 export DESTDIR=${mesos.destdir_}
-make install > ./install.output
+make install > ./install.output 2>&1
 ERR_=$?
 if [ $ERR_ -ne 0 ]; then
 	echo "Error running make install, check '$.mesos.buildfolder_}/install.output'"

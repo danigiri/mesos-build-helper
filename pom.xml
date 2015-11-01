@@ -203,7 +203,8 @@
 								<source>
 									<location>${mesos.destdir_}/${install.prefix_}/include/mesos</location>
 								</source>
-							</sources>
+							</sources>ls
+							
 						</mapping>
 												
 						<mapping>	<!-- python libs, (/lib we assume exists) -->	
