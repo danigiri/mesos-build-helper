@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 echo '*** Building and packaging Mesos, this will take a long time ****'
-export JAVA_HOME='/usr/lib/jvm/java'
+if [ -e '/usr/lib/jvm/java' ]; then
+	# open jdk
+	export JAVA_HOME='/usr/lib/jvm/java'
+else
+	# oracle
+	export JAVA_HOME='/usr/lib/jvm/java-8-oracle'
+fi
 M2_HOME=`pwd`/.deps/apache-maven \
 MAVEN_HOME=$M2_HOME \
 PATH=$MAVEN_HOME/bin:$PATH \

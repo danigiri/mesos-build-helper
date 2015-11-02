@@ -46,7 +46,7 @@ echoerr_ 'Building... (check ${mesos.buildfolder_}/make.output for logs)'
 make > ./make.output
 ERR_=$?
 if [ $ERR_ -ne 0 ]; then
-	echo "Error running make, check '$.mesos.buildfolder_}/make.output'"
+	echo "Error running make, check '${mesos.buildfolder_}/make.output'"
 	exit $ERR_
 fi
 echoerr_ 'Configure complete'
@@ -56,7 +56,7 @@ export DESTDIR=${mesos.destdir_}
 make install > ./install.output 2>&1
 ERR_=$?
 if [ $ERR_ -ne 0 ]; then
-	echo "Error running make install, check '$.mesos.buildfolder_}/install.output'"
+	echo "Error running make install, check '${mesos.buildfolder_}/install.output'"
 	exit $ERR_
 fi
 echoerr_ 'Make install complete'
