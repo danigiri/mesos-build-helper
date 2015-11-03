@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #  Copyright 2015 Daniel Giribet <dani - calidos.cat>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-[ -z "$DOCKER" ] && DOCKER='docker'
-[ -z "$IMAGE_NAME" ] && IMAGE_NAME='mesos-build-helper'
-[ -z "$DOCKER_FILE" ] && DOCKER_FILE='Dockerfile'
-
-$DOCKER build -t "$IMAGE_NAME" -f "$DOCKER_FILE" .
-sleep 5
-echo 'Finding the Mesos rpm within the container...'
-rpm_=$($DOCKER run "$IMAGE_NAME" find /build/target/rpm/mesos/RPMS -name '*.rpm')
-name_=$(basename "$rpm_")
-echo "Name of Mesos rpm: '$name_'"
-echo 'Extracting the rpm...'
-id_=$($DOCKER create "$IMAGE_NAME")
-docker cp "$id_:$rpm_" .
-docker rm -v "$id_"
-echo 'Done, here you have your Mesos rpm:'
-ls *.rpm
+FROM ubuntu:14.04
+MAINTAINER Daniel Giribet
+RUN mkdir build
+ADD pom.xml LICENSE build/
+ADD script build/script
+ADD src build/src
+#WORKDIR build
+RUN bash -c "cd build && source ./script/bootstrap"
+RUN bash -c "cd build && source ./script/setup"
