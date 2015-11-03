@@ -24,8 +24,8 @@ echoerr_() { printf %s\\n "$@" 1>&2; }
 echoerr_ 'Building Apache Mesos v${mesos.version_} at ${mesos.sourcefolder_}, standby...'
 
 # Avoid annoying perl warnings when bootstrapping mesos
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
+export LC_ALL=C
+export LANG=C
 
 echoerr_ 'Bootstrapping... (check ${mesos.sourcefolder_}/bootstrap.output for logs)'
 chmod -v a+x bootstrap
@@ -43,7 +43,7 @@ echoerr_ 'Configuring... (check ${mesos.buildfolder_}/configure.output for logs)
 ../configure > ./configure.output 2>&1
 
 echoerr_ 'Building... (check ${mesos.buildfolder_}/make.output for logs)'
-make > ./make.output
+make > ./make.output 2>&1
 ERR_=$?
 if [ $ERR_ -ne 0 ]; then
 	echo "Error running make, check '${mesos.buildfolder_}/make.output'"
