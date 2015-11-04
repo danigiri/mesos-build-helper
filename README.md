@@ -3,6 +3,9 @@ Building Apache Mesos and generating a custom RPM
 
 ## Build instructions
 
+### Prerequisites
+Docker
+
 ### CentOS RPM
 ```
 git clone https://github.com/danigiri/mesos-build-helper.git
