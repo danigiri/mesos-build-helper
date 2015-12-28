@@ -29,7 +29,7 @@
         
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mesos.version_>0.25.0</mesos.version_>
+		<mesos.version_>0.26.0</mesos.version_>
 		<mesos.url_>https://github.com/apache/mesos/archive/${mesos.version_}.tar.gz</mesos.url_>
        	<binary.architecture_>x86_64</binary.architecture_>	<!-- default -->
 
