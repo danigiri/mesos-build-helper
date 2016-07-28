@@ -24,13 +24,13 @@
 	<name>Apache Mesos build helper</name>
 	<description>Downloads Apache Mesos, compiles it and builds an rpm
 	</description>
-    <inceptionYear>2015</inceptionYear>
+    <inceptionYear>2016</inceptionYear>
     <url>http://dani.calidos.com</url>
         
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mesos.version_>0.27.1</mesos.version_>
-		<mesos.url_>https://github.com/apache/mesos/archive/${mesos.version_}.tar.gz</mesos.url_>
+		<mesos.version_>0.28.2</mesos.version_>
+		<mesos.url_>http://archive.apache.org/dist/mesos/0.28.2/mesos-${mesos.version_}.tar.gz</mesos.url_>
        	<binary.architecture_>x86_64</binary.architecture_>	<!-- default -->
 
     	<compile.script_>${project.build.directory}/${project.artifactId}-compile.sh</compile.script_>
@@ -303,7 +303,7 @@
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
-			<comments>Copyright (C) 2015 Daniel Giribet (packaging)</comments>
+			<comments>Copyright (C) 2016 Daniel Giribet (packaging)</comments>
 		</license>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
