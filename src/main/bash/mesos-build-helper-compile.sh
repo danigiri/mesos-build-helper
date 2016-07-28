@@ -40,6 +40,7 @@ echoerr_ 'Bootstrap complete'
 mkdir -vp ${mesos.buildfolder_}
 cd ${mesos.buildfolder_}
 echoerr_ 'Configuring... (check ${mesos.buildfolder_}/configure.output for logs)'
+chmod -v a+x ../configure
 ../configure > ./configure.output 2>&1
 
 echoerr_ 'Building... (check ${mesos.buildfolder_}/make.output for logs)'

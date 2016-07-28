@@ -15,7 +15,7 @@
 
 [ -z "$JAVA_PACKAGES" ] && JAVA_PACKAGES='java-1.8.0-openjdk-headless java-1.8.0-openjdk-devel'
 
-[ -z "$MAVEN_URL" ] && MAVEN_URL='http://apache.rediris.es/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz'
+[ -z "$MAVEN_URL" ] && MAVEN_URL='http://apache.rediris.es/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
 [ -z "$PREFIX" ] && PREFIX='./.deps'
 
 [ -z "$MAVEN_FILE" ] && MAVEN_FILE='apache-maven.tar.gz'

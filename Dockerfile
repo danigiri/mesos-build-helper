@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM centos
+# docker build -t mesos-build-helper -f Dockerfile .
+# docker run -ti --entrypoint /bin/bash mesos-build-helper 
+
+FROM centos:centos7
 MAINTAINER Daniel Giribet
 RUN mkdir build
 ADD pom.xml LICENSE build/
