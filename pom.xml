@@ -29,8 +29,8 @@
         
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mesos.version_>0.28.2</mesos.version_>
-		<mesos.url_>http://archive.apache.org/dist/mesos/0.28.2/mesos-${mesos.version_}.tar.gz</mesos.url_>
+	<mesos.version_>${env.MESOS_VER}</mesos.version_>
+		<mesos.url_>http://archive.apache.org/dist/mesos/${mesos.version_}/mesos-${mesos.version_}.tar.gz</mesos.url_>
        	<binary.architecture_>x86_64</binary.architecture_>	<!-- default -->
 
     	<compile.script_>${project.build.directory}/${project.artifactId}-compile.sh</compile.script_>

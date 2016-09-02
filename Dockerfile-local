@@ -22,4 +22,4 @@ ADD script build/script
 ADD src build/src
 #WORKDIR build
 RUN bash -c "cd build && source ./script/bootstrap"
-RUN bash -c "cd build && source ./script/setup"
+RUN bash -c "cd build && source ./script/setup_local"

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #  Copyright 2015 Daniel Giribet <dani - calidos.cat>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,15 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+echo '*** Building and packaging Mesos, this will take a long time ****'
 
-FROM ubuntu:14.04
-MAINTAINER Daniel Giribet
-ARG mesos_ver=0.28.2
-ENV MESOS_VER $mesos_ver
-RUN mkdir build
-ADD pom.xml LICENSE build/
-ADD script build/script
-ADD src build/src
-#WORKDIR build
-RUN bash -c "cd build && source ./script/bootstrap"
-RUN bash -c "cd build && source ./script/setup"
+
+echo '*** Finished building and packaging Mesos ****'
