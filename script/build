@@ -21,6 +21,10 @@
 docker_build="$DOCKER build $BUILD_ARGS -t $IMAGE_NAME -f $DOCKER_FILE ."
 echo "Executing the following docker build command: $docker_build"
 eval $docker_build
+if $(test $? -ne 0); then 
+	echo "ERROR: compilation failed"
+	exit 1
+fi	       
 sleep 5
 echo 'Finding the Mesos rpm within the container...'
 rpm_=$($DOCKER run "$IMAGE_NAME" find /build/target/rpm/mesos/RPMS -name '*.rpm')
