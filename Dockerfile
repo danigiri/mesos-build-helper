@@ -17,6 +17,8 @@
 
 FROM centos:centos7
 MAINTAINER Daniel Giribet
+ARG mesos_ver=0.28.2
+ENV MESOS_VER $mesos_ver
 RUN mkdir build
 ADD pom.xml LICENSE build/
 ADD script build/script

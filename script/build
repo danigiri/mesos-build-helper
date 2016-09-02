@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 [ -z "$DOCKER" ] && DOCKER='docker'
 [ -z "$IMAGE_NAME" ] && IMAGE_NAME='mesos-build-helper'
 [ -z "$DOCKER_FILE" ] && DOCKER_FILE='Dockerfile'
+[ -n "$MESOS_VER" ] && BUILD_ARGS="--build-arg mesos_ver=$MESOS_VER"
 
-$DOCKER build -t "$IMAGE_NAME" -f "$DOCKER_FILE" .
+$DOCKER build $BUILD_ARGS -t "$IMAGE_NAME" -f "$DOCKER_FILE" .
 sleep 5
 echo 'Finding the Mesos rpm within the container...'
 rpm_=$($DOCKER run "$IMAGE_NAME" find /build/target/rpm/mesos/RPMS -name '*.rpm')
