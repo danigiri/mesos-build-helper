@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2014 Daniel Giribet <dani - calidos.cat>
+  Copyright 2016 Daniel Giribet <dani - calidos.cat>
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
         
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<mesos.version_>${env.MESOS_VER}</mesos.version_>
+		<mesos.version_>${env.MESOS_VER}</mesos.version_>
 		<mesos.url_>http://archive.apache.org/dist/mesos/${mesos.version_}/mesos-${mesos.version_}.tar.gz</mesos.url_>
        	<binary.architecture_>x86_64</binary.architecture_>	<!-- default -->
 
@@ -368,8 +368,3 @@ drwxr-xr-x    2 root    root                        0 Oct 12 22:08 /var/log/meso
 	 -->
 </project>
 
-
-
-
-
-		    
